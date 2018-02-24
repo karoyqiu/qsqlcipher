@@ -64,24 +64,25 @@ struct sqlite3;
 QT_BEGIN_NAMESPACE
 
 class QSqlResult;
-class QSQLiteDriverPrivate;
+class QSqlCipherDriverPrivate;
 
-class Q_EXPORT_SQLDRIVER_SQLITE QSQLiteDriver : public QSqlDriver
+class Q_EXPORT_SQLDRIVER_SQLITE QSqlCipherDriver : public QSqlDriver
 {
-    Q_DECLARE_PRIVATE(QSQLiteDriver)
+    Q_DECLARE_PRIVATE(QSqlCipherDriver)
     Q_OBJECT
-    friend class QSQLiteResultPrivate;
+    friend class QSqlCipherResultPrivate;
+
 public:
-    explicit QSQLiteDriver(QObject *parent = 0);
-    explicit QSQLiteDriver(sqlite3 *connection, QObject *parent = 0);
-    ~QSQLiteDriver();
+    explicit QSqlCipherDriver(QObject *parent = 0);
+    explicit QSqlCipherDriver(sqlite3 *connection, QObject *parent = 0);
+    ~QSqlCipherDriver();
     bool hasFeature(DriverFeature f) const Q_DECL_OVERRIDE;
     bool open(const QString & db,
-                   const QString & user,
-                   const QString & password,
-                   const QString & host,
-                   int port,
-                   const QString & connOpts) Q_DECL_OVERRIDE;
+              const QString & user,
+              const QString & password,
+              const QString & host,
+              int port,
+              const QString & connOpts) Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
     QSqlResult *createResult() const Q_DECL_OVERRIDE;
     bool beginTransaction() Q_DECL_OVERRIDE;
@@ -97,7 +98,7 @@ public:
     bool subscribeToNotification(const QString &name) Q_DECL_OVERRIDE;
     bool unsubscribeFromNotification(const QString &name) Q_DECL_OVERRIDE;
     QStringList subscribedToNotifications() const Q_DECL_OVERRIDE;
-private Q_SLOTS:
+    private Q_SLOTS:
     void handleNotification(const QString &tableName, qint64 rowid);
 };
 

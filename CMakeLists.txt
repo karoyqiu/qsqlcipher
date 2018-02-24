@@ -78,8 +78,5 @@ check_warning_flags(PROJECT_WARNING_FLAGS)
 # 第三方库
 add_subdirectory("third_party")
 
-# Qt5
-find_package(Qt5Core REQUIRED)
-
 # 源代码
-#add_subdirectory("src")
+add_subdirectory("src")

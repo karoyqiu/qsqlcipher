@@ -36,17 +36,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <qsqldriverplugin.h>
-#include <qstringlist.h>
-#include "qsql_sqlite_p.h"
+#pragma once
+#include <QSqlDriverPlugin>
 
 QT_BEGIN_NAMESPACE
 
 class QSQLiteDriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "sqlite.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "sqlcipher.json")
 
 public:
     QSQLiteDriverPlugin();
@@ -54,20 +52,4 @@ public:
     QSqlDriver* create(const QString &) Q_DECL_OVERRIDE;
 };
 
-QSQLiteDriverPlugin::QSQLiteDriverPlugin()
-    : QSqlDriverPlugin()
-{
-}
-
-QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)
-{
-    if (name == QLatin1String("QSQLITE")) {
-        QSQLiteDriver* driver = new QSQLiteDriver();
-        return driver;
-    }
-    return 0;
-}
-
 QT_END_NAMESPACE
-
-#include "smain.moc"
