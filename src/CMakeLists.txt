@@ -4,6 +4,9 @@
     sqlcipher.json
 )
 target_compile_definitions(qsqlcipher PRIVATE QT_PLUGIN)
+set_target_properties(qsqlcipher PROPERTIES
+    DEBUG_POSTFIX "d"
+)
 
 # Qt5
 find_package(Qt5Sql REQUIRED COMPONENTS Private)
