@@ -82,3 +82,6 @@ add_subdirectory("third_party")
 
 # 源代码
 add_subdirectory("src")
+
+# 工具
+add_subdirectory("tools")

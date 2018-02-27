@@ -783,8 +783,21 @@ bool QSqlCipherDriver::open(const QString & db, const QString &, const QString &
 #ifdef SQLITE_HAS_CODEC
         if (!password.isEmpty())
         {
-            auto u8 = password.toUtf8();
-            sqlite3_key(d->access, u8.constData(), u8.length());
+            auto key = password.toUtf8();
+            sqlite3_key(d->access, key.constData(), key.length());
+            key.fill(0);
+
+            if (sqlite3_exec(d->access, "SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) != SQLITE_OK) {
+                if (d->access) {
+                    sqlite3_close(d->access);
+                    d->access = 0;
+                }
+
+                setLastError(qMakeError(d->access, tr("Error opening database"),
+                                        QSqlError::ConnectionError));
+                setOpenError(true);
+                return false;
+            }
         }
 #endif
         sqlite3_busy_timeout(d->access, timeOut);
