@@ -75,6 +75,8 @@ target_architecture(PROJECT_TARGET_ARCH)
 include(WarningFlags)
 check_warning_flags(PROJECT_WARNING_FLAGS)
 
+include(EnableFolder)
+
 # 第三方库
 add_subdirectory("third_party")
 

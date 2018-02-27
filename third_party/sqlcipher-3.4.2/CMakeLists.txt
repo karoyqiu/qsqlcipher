@@ -11,7 +11,4 @@ target_compile_definitions(sqlite PUBLIC
     SQLITE_TEMP_STORE=2
 )
 target_include_directories(sqlite INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(OPENSSL_USE_STATIC_LIBS ON)
-find_package(OpenSSL REQUIRED)
-target_link_libraries(sqlite PUBLIC OpenSSL::Crypto)
+target_link_libraries(sqlite PUBLIC crypto)

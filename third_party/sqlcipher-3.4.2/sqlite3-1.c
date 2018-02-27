@@ -21601,6 +21601,7 @@ int sqlcipher_ltc_setup(sqlcipher_provider *p) {
 /* #include "sqliteInt.h" */
 /* #include "crypto.h" */
 /* #include "sqlcipher.h" */
+#include <openssl/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
@@ -21635,6 +21636,10 @@ static void HMAC_CTX_free(HMAC_CTX *ctx)
     OPENSSL_free(ctx);
   }
 }
+#endif
+
+#ifndef EVP_CIPHER_name
+#define EVP_CIPHER_name(e)  OBJ_nid2sn(EVP_CIPHER_nid(e))
 #endif
 
 static int sqlcipher_openssl_add_random(void *ctx, void *buffer, int length) {
