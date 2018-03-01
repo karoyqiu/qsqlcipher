@@ -21606,6 +21606,7 @@ int sqlcipher_ltc_setup(sqlcipher_provider *p) {
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/err.h>
+#include <openssl/obj.h>
 
 typedef struct {
   EVP_CIPHER *evp_cipher;
