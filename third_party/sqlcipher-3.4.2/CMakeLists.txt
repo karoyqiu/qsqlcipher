@@ -12,3 +12,7 @@ target_compile_definitions(sqlite PUBLIC
 )
 target_include_directories(sqlite INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(sqlite PUBLIC crypto)
+
+if(WIN32)
+    target_compile_definitions(sqlite PRIVATE WIN32_LEAN_AND_MEAN)
+endif()
