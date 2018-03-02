@@ -1,0 +1,6 @@
+[submodule "third_party/boringssl"]
+	path = third_party/boringssl
+	url = https://github.com/karoyqiu/boringssl.git
+[submodule "boringssl"]
+	path = third_party/boringssl
+	url = https://github.com/karoyqiu/boringssl.git
