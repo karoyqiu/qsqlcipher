@@ -470,7 +470,7 @@ bool QSqlCipherResult::exec()
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
     if (paramCount < values.count()) {
-        const auto countIndexes = [](int counter, const QList<int>& indexList) {
+        const auto countIndexes = [](int counter, const QVector<int>& indexList) {
             return counter + indexList.length();
         };
 
@@ -484,7 +484,7 @@ bool QSqlCipherResult::exec()
         // placeholders. So we need to ensure the QVector has only one instance of
         // each value as SQLite will do the rest for us.
         QVector<QVariant> prunedValues;
-        QList<int> handledIndexes;
+        QVector<int> handledIndexes;
         for (int i = 0, currentIndex = 0; i < values.size(); ++i) {
             if (handledIndexes.contains(i))
                 continue;
