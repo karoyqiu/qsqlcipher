@@ -51,11 +51,12 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 #include <qcache.h>
 #include <qregularexpression.h>
 #endif
 #include <QTimeZone>
+#include <QScopedValueRollback>
 
 #if defined Q_OS_WIN
 # include <qt_windows.h>
@@ -123,19 +124,20 @@ class QSqlCipherResult : public QSqlCachedResult
 public:
     explicit QSqlCipherResult(const QSqlCipherDriver* db);
     ~QSqlCipherResult();
-    QVariant handle() const Q_DECL_OVERRIDE;
+    QVariant handle() const override;
 
 protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx) Q_DECL_OVERRIDE;
-    bool reset(const QString &query) Q_DECL_OVERRIDE;
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    void detachFromResultSet() Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx) override;
+    bool reset(const QString &query) override;
+    bool prepare(const QString &query) override;
+    bool execBatch(bool arrayBind) override;
+    bool exec() override;
+    int size() override;
+    int numRowsAffected() override;
+    QVariant lastInsertId() const override;
+    QSqlRecord record() const override;
+    void detachFromResultSet() override;
+    void virtual_hook(int id, void *data) override;
 };
 
 class QSqlCipherDriverPrivate : public QSqlDriverPrivate
@@ -445,6 +447,28 @@ static QString timespecToString(const QDateTime &dateTime)
     }
 }
 
+bool QSqlCipherResult::execBatch(bool arrayBind)
+{
+    Q_UNUSED(arrayBind);
+    Q_D(QSqlResult);
+    QScopedValueRollback<QVector<QVariant>> valuesScope(d->values);
+    QVector<QVariant> values = d->values;
+    if (values.count() == 0)
+        return false;
+
+    for (int i = 0; i < values.at(0).toList().count(); ++i) {
+        d->values.clear();
+        QScopedValueRollback<QHash<QString, QVector<int>>> indexesScope(d->indexes);
+        QHash<QString, QVector<int>>::const_iterator it = d->indexes.constBegin();
+        while (it != d->indexes.constEnd()) {
+            bindValue(it.key(), values.at(it.value().first()).toList().at(i), QSql::In);
+            ++it;
+        }
+        if (!exec())
+            return false;
+    }
+    return true;
+}
 bool QSqlCipherResult::exec()
 {
     Q_D(QSqlCipherResult);
@@ -469,7 +493,10 @@ bool QSqlCipherResult::exec()
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
-    if (paramCount < values.count()) {
+    // We need to check explicitly that paramCount is greater than 1, as sqlite
+    // can end up in a case where for virtual tables it returns 0 even though it
+    // has parameters
+    if (paramCount > 1 && paramCount < values.count()) {
         const auto countIndexes = [](int counter, const QVector<int>& indexList) {
             return counter + indexList.length();
         };
@@ -489,8 +516,9 @@ bool QSqlCipherResult::exec()
             if (handledIndexes.contains(i))
                 continue;
             const auto placeHolder = QString::fromUtf8(sqlite3_bind_parameter_name(d->stmt, currentIndex + 1));
-            handledIndexes << d->indexes[placeHolder];
-            prunedValues << values.at(d->indexes[placeHolder].first());
+            const auto &indexes = d->indexes.value(placeHolder);
+            handledIndexes << indexes;
+            prunedValues << values.at(indexes.first());
             ++currentIndex;
         }
         values = prunedValues;
@@ -626,7 +654,7 @@ QVariant QSqlCipherResult::handle() const
 
 /////////////////////////////////////////////////////////
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 static void _q_regexp(sqlite3_context* context, int argc, sqlite3_value** argv)
 {
     if (Q_UNLIKELY(argc != 2)) {
@@ -726,7 +754,7 @@ bool QSqlCipherDriver::open(const QString & db, const QString &, const QString &
     bool sharedCache = false;
     bool openReadOnlyOption = false;
     bool openUriOption = false;
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     static const QLatin1String regexpConnectOption = QLatin1String("QSQLITE_ENABLE_REGEXP");
     bool defineRegexp = false;
     int regexpCacheSize = 25;
@@ -753,7 +781,7 @@ bool QSqlCipherDriver::open(const QString & db, const QString &, const QString &
         else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
             sharedCache = true;
         }
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
             option = option.mid(regexpConnectOption.size()).trimmed();
             if (option.isEmpty()) {
@@ -803,7 +831,7 @@ bool QSqlCipherDriver::open(const QString & db, const QString &, const QString &
         sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
         setOpenError(false);
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
         if (defineRegexp) {
             auto cache = new QCache<QString, QRegularExpression>(regexpCacheSize);
             sqlite3_create_function_v2(d->access, "regexp", 2, SQLITE_UTF8, cache, &_q_regexp, NULL,

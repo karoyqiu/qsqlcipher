@@ -42,12 +42,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QSQLiteDriverPlugin::QSQLiteDriverPlugin()
+QSqlCipherDriverPlugin::QSqlCipherDriverPlugin()
     : QSqlDriverPlugin()
 {
 }
 
-QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)
+QSqlDriver* QSqlCipherDriverPlugin::create(const QString &name)
 {
     if (name == QLatin1String("QSQLCIPHER")) {
         QSqlCipherDriver* driver = new QSqlCipherDriver();

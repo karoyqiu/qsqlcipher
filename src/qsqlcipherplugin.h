@@ -41,13 +41,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSQLiteDriverPlugin : public QSqlDriverPlugin
+class QSqlCipherDriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "sqlcipher.json")
 
 public:
-    QSQLiteDriverPlugin();
+    QSqlCipherDriverPlugin();
 
     QSqlDriver* create(const QString &) Q_DECL_OVERRIDE;
 };
